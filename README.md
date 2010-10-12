@@ -25,10 +25,15 @@ Using the app is pretty simple:
    share in this functionality.
 3. Create and/or Register admins for each of these models using `logicaldelete.admin.ModelAdmin`
 
-## Additional
+## Additional Database Auditing Fields
 
 Logical deletes are handled by date stamping a `date_removed` column.  In addition, a `date_created` 
 and `date_modified` columns will be populated as a convenience.
+
+If you are migrating from an existing schema and you already have `date_created`
+or `date_modified` fields on your models, you can inheirit
+from `logicaldelete.admin.LogicalDeleteModel` to get only the delete-specific
+functionality.
 
 ## Possible Extensions
 

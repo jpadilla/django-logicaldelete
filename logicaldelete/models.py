@@ -26,9 +26,7 @@ class LogicalDeletedManager(models.Manager):
         return self.get_query_set().filter(*args, **kwargs)
 
 
-class Model(models.Model):
-    date_created  = models.DateTimeField(default=datetime.now)
-    date_modified = models.DateTimeField(default=datetime.now)
+class LogicalDeleteModel(models.Model):
     date_removed  = models.DateTimeField(null=True, blank=True)
 
     objects    = LogicalDeletedManager()
@@ -43,5 +41,20 @@ class Model(models.Model):
         self.date_removed = datetime.now()
         self.save()
 
+    class Meta:
+        abstract = True
+
+class AuditModel(models.Model):
+    date_created  = models.DateTimeField(default=datetime.now)
+    date_modified = models.DateTimeField(default=datetime.now)
+
+    class Meta:
+        abstract = True
+
+class Model(LogicalDeleteModel, AuditModel):
+    """
+    An abstract class with fields to track creation, modification and
+    deletion of the model.
+    """
     class Meta:
         abstract = True
