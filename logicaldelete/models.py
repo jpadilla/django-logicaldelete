@@ -49,7 +49,7 @@ class AuditModel(models.Model):
     date_modified = models.DateTimeField(editable=False)
 
     def save(self, *args, **kwargs):
-        if not self.id:
+        if not self.date_created:
             self.date_created = datetime.now()
         self.date_modified = datetime.now()
         super(AuditModel, self).save(*args, **kwargs)
