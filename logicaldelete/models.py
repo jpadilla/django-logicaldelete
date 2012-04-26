@@ -1,19 +1,24 @@
 from datetime import datetime
-from django.db import models
+from django.db import models, router
+from deletion import LogicalDeleteCollector
+from base import LogicalDeleteModelBase
 
 
 class LogicalDeletedManager(models.Manager):
+    use_for_related_fields = True
+
     def get_query_set(self):
-        if self.model:
-            return super(LogicalDeletedManager, self).get_query_set().filter(date_removed__isnull=True)
+        return super(LogicalDeletedManager, self).get_query_set().filter(date_removed__isnull=True)
 
     def everything(self):
-        if self.model:
-            return super(LogicalDeletedManager, self).get_query_set()
+        qs = super(LogicalDeletedManager, self).get_query_set()
+        # for related manager
+        if hasattr(self, 'core_filters'):
+            return qs.filter(**self.core_filters)
+        return qs
 
     def only_deleted(self):
-        if self.model:
-            return super(LogicalDeletedManager, self).get_query_set().filter(date_removed__isnull=False)
+        return self.everything().filter(date_removed__isnull=False)
 
     def get(self, *args, **kwargs):
         ''' if a specific record was requested, return it even if it's deleted '''
@@ -27,22 +32,28 @@ class LogicalDeletedManager(models.Manager):
 
 
 class LogicalDeleteModel(models.Model):
-    date_removed  = models.DateTimeField(null=True, blank=True)
+    __metaclass__ = LogicalDeleteModelBase
+    date_removed  = models.DateTimeField(null=True, blank=True, editable=False)
 
     objects    = LogicalDeletedManager()
-    deleted    = LogicalDeletedManager().only_deleted()
-    everything = LogicalDeletedManager().everything()
-    
+
     def active(self):
         return self.date_removed == None
     active.boolean = True
 
-    def delete(self):
-        self.date_removed = datetime.now()
-        self.save()
+    def delete(self, using=None):
+        using = using or router.db_for_write(self.__class__, instance=self)
+        assert self._get_pk_val() is not None, "%s object can't be deleted because its %s attribute is set to None." % (self._meta.object_name, self._meta.pk.attname)
+
+        collector = LogicalDeleteCollector(using=using)
+        collector.collect([self])
+        collector.delete()
+
+    delete.alters_data = True
 
     class Meta:
         abstract = True
+
 
 class AuditModel(models.Model):
     date_created  = models.DateTimeField(editable=False)
