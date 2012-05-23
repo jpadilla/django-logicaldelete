@@ -25,6 +25,37 @@ Using the app is pretty simple:
    share in this functionality.
 3. Create and/or Register admins for each of these models using `logicaldelete.admin.ModelAdmin`
 
+## Meta options
+
+You can specify deletion behaviour by using an inner class LogicalDeleteMeta, like so:
+
+
+    class YourModel(logicaldelete.models.Model):
+
+        class LogicalDeleteMeta:
+            delete_related = True
+            safe_deletion = True
+            delete_batches = False
+
+
+### Available Meta options
+
+#### delete_related
+If delete\_related = True, when an objects referenced by a ForeignKey is deleted,
+it also deletes (or marked as deleted) the objects containing the ForeignKey.
+If delete\_related = False related objects not deleted.
+
+#### safe_deletion
+safe\_deletion means safe deletion related objects.
+If safe\_deletion = True not delete related objects the instance of "plain"
+models class, but flagged as deleted related objects instances of logical deletion model class.
+
+#### delete_batches
+delete\_batches = True means delete many-to-many relations.
+
+_If you want to save original deletion behaviour (for compatible with old code)
+you must set delete\_related = False, and delete\_batches = False_
+
 ## Additional Database Auditing Fields
 
 Logical deletes are handled by date stamping a `date_removed` column.  In addition, a `date_created` 

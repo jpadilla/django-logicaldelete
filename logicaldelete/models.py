@@ -1,17 +1,63 @@
 from datetime import datetime
 from django.db import models, router
+from django.db.models import query
 from deletion import LogicalDeleteCollector
 from base import LogicalDeleteModelBase
+
+
+class LogicalDeleteQuerySet(query.QuerySet):
+
+    def everything(self):
+        qs = super(LogicalDeleteQuerySet, self).all()
+        qs.__class__ = LogicalDeleteQuerySet
+        return qs
+
+    def delete(self):
+        """
+        Deletes the records in the current QuerySet.
+        """
+        assert self.query.can_filter(),\
+        "Cannot use 'limit' or 'offset' with delete."
+
+        del_query = self._clone()
+
+        # The delete is actually 2 queries - one to find related objects,
+        # and one to delete. Make sure that the discovery of related
+        # objects is performed on the same database as the deletion.
+        del_query._for_write = True
+
+        # Disable non-supported fields.
+        del_query.query.select_for_update = False
+        del_query.query.select_related = False
+        del_query.query.clear_ordering()
+
+        collector = LogicalDeleteCollector(using=del_query.db)
+        collector.collect(del_query)
+        collector.delete()
+
+        # Clear the result cache, in case this QuerySet gets reused.
+        self._result_cache = None
+
+    delete.alters_data = True
+
+
+    def undelete(self, using='default', *args, **kwargs):
+        self.update(date_removed=None)
+
+    undelete.alters_data = True
 
 
 class LogicalDeletedManager(models.Manager):
     use_for_related_fields = True
 
     def get_query_set(self):
-        return super(LogicalDeletedManager, self).get_query_set().filter(date_removed__isnull=True)
+        qs = super(LogicalDeletedManager, self).get_query_set().filter(date_removed__isnull=True)
+        qs.__class__ = LogicalDeleteQuerySet
+        return qs
 
     def everything(self):
         qs = super(LogicalDeletedManager, self).get_query_set()
+        qs.__class__ = LogicalDeleteQuerySet
         # for related manager
         if hasattr(self, 'core_filters'):
             return qs.filter(**self.core_filters)

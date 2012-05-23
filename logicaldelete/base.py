@@ -27,4 +27,5 @@ class LogicalDeleteModelBase(models.base.ModelBase):
         new = super(LogicalDeleteModelBase, cls).__new__(cls, name, bases, attrs)
         logicaldelete_opts = attrs.pop('LogicalDeleteMeta', None)
         setattr(new, '_logicaldelete_meta', LogicalDeleteOptions(logicaldelete_opts))
+        new._meta.permissions += (("can_undelete", "Can undelete permission"),)
         return new
