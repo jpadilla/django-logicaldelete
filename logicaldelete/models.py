@@ -40,6 +40,8 @@ class LogicalDeleteQuerySet(query.QuerySet):
 
     delete.alters_data = True
 
+    def only_deleted(self):
+        return self.filter(date_removed__isnull=False)
 
     def undelete(self, using='default', *args, **kwargs):
         self.update(date_removed=None)
@@ -96,6 +98,9 @@ class LogicalDeleteModel(models.Model):
         collector.delete()
 
     delete.alters_data = True
+
+    def undelete(self):
+        self.__class__.objects.filter(pk=self.pk).undelete()
 
     class Meta:
         abstract = True

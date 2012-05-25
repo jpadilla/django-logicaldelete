@@ -1,0 +1,8 @@
+.submit-row p.undeletelink-box {
+    float: left;
+}
+
+.submit-row .undeletelink {
+    background: url(../img/icon_undeletelink.png) 0 45% no-repeat;
+    padding-left: 17px;
+}
