@@ -14,7 +14,7 @@ class LogicalDeleteQuerySet(query.QuerySet):
 
     def delete(self):
         """
-        Deletes the records in the current QuerySet.
+        Mark as deleted the records in the current QuerySet.
         """
         assert self.query.can_filter(),\
         "Cannot use 'limit' or 'offset' with delete."
@@ -39,6 +39,14 @@ class LogicalDeleteQuerySet(query.QuerySet):
         self._result_cache = None
 
     delete.alters_data = True
+
+    def remove(self):
+        """
+        Deletes the records in the current QuerySet.
+        """
+        query.QuerySet.delete(self)
+
+    remove.alters_data = True
 
     def only_deleted(self):
         return self.filter(date_removed__isnull=False)

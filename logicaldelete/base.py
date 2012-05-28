@@ -16,6 +16,9 @@ class LogicalDeleteOptions(object):
                 setattr(self, key, value)
 
 
+logicaldelete_models_registry = []
+
+
 class LogicalDeleteModelBase(models.base.ModelBase):
     """
     BaseLogicalDelete metaclass.
@@ -25,6 +28,8 @@ class LogicalDeleteModelBase(models.base.ModelBase):
 
     def __new__(cls, name, bases, attrs):
         new = super(LogicalDeleteModelBase, cls).__new__(cls, name, bases, attrs)
+        if not new._meta.abstract:
+            logicaldelete_models_registry.append(new)
         logicaldelete_opts = attrs.pop('LogicalDeleteMeta', None)
         setattr(new, '_logicaldelete_meta', LogicalDeleteOptions(logicaldelete_opts))
         new._meta.permissions += (("undelete_%s" % new._meta.module_name,
