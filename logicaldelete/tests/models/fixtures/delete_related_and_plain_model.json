@@ -1,0 +1,32 @@
+[
+  {
+    "pk": 1, 
+    "model": "models.related2model", 
+    "fields": {
+      "date_removed": null, 
+      "date_modified": "2012-04-17T11:31:52.363", 
+      "text": "related2", 
+      "related": 1, 
+      "date_created": "2012-04-17T11:31:52.363"
+    }
+  }, 
+  {
+    "pk": 1, 
+    "model": "models.relatedmodel", 
+    "fields": {
+      "text": "related", 
+      "related": 1
+    }
+  }, 
+  {
+    "pk": 1, 
+    "model": "models.testmodel", 
+    "fields": {
+      "date_removed": null, 
+      "date_modified": "2012-04-17T11:30:44.093", 
+      "text": "test model", 
+      "related": 1, 
+      "date_created": "2012-04-17T11:30:44.093"
+    }
+  }
+]

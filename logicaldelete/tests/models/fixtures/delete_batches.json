@@ -1,0 +1,22 @@
+[
+  {
+    "pk": 1, 
+    "model": "models.testmodel",
+    "fields": {
+      "date_removed": null, 
+      "date_modified": "2012-04-17T11:30:44.093", 
+      "text": "test model", 
+      "date_created": "2012-04-17T11:30:44.093"
+    }
+  }, 
+  {
+    "pk": 1, 
+    "model": "models.relatedmany",
+    "fields": {
+      "text": "related many",
+      "related": [
+        1
+      ]
+    }
+  }
+]
