@@ -16,7 +16,7 @@ class TestCase(test.TestCase):
         for app in self.apps:
             settings.INSTALLED_APPS.append(app)
         loading.cache.loaded = False
-        call_command('syncdb', interactive=False, verbosity=0)
+        call_command('syncdb', interactive=False, verbosity=0, migrate=False)
         # Call the original method that does the fixtures etc.
         super(TestCase, self)._pre_setup()
 
