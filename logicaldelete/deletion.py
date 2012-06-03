@@ -83,14 +83,6 @@ class LogicalDeleteCollector(Collector):
                     sender=model, instance=obj, using=self.using
                 )
 
-        # update fields
-        for model, instances_for_fieldvalues in self.field_updates.iteritems():
-            query = sql.UpdateQuery(model)
-            for (field, value), instances in instances_for_fieldvalues.\
-                                                                   iteritems():
-                query.update_batch([obj.pk for obj in instances],
-                        {field.name: value}, self.using)
-
         # reverse instance collections
         for instances in self.data.itervalues():
             instances.reverse()
@@ -139,10 +131,6 @@ class LogicalDeleteCollector(Collector):
                 )
 
         # update collected instances
-        for model, instances_for_fieldvalues in self.field_updates.iteritems():
-            for (field, value), instances in instances_for_fieldvalues.iteritems():
-                for obj in instances:
-                    setattr(obj, field.attname, value)
         for model, instances in self.data.iteritems():
             for instance in instances:
                 if not instance in self.objs_for_delete:
