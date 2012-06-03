@@ -11,11 +11,34 @@ from django.template.response import TemplateResponse
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext_lazy
 from django.utils.translation import ugettext as _
+from django.contrib.admin import SimpleListFilter
+
+
+class ActiveListFilter(SimpleListFilter):
+    title = _('Active')
+    parameter_name = 'active'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('1', _('Yes')),
+            ('0', _('No'))
+            )
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        if self.value() == '1':
+            return queryset.filter(date_removed__isnull=True)
+        if self.value() == '0':
+            return queryset.filter(date_removed__isnull=False)
 
 
 class ModelAdmin(admin.ModelAdmin):
     list_display = ('id', '__unicode__', 'active')
-    list_display_filter = ('active',)
+    list_filter = (ActiveListFilter, )
 
     actions = ['undelete_selected']
     undelete_selected_confirmation_template = None

@@ -3,6 +3,7 @@ from django.db import models, router
 from deletion import LogicalDeleteCollector
 from base import LogicalDeleteModelBase
 from logicaldelete import managers
+from django.utils.translation import ugettext as _
 
 
 class LogicalDeleteModel(models.Model):
@@ -13,6 +14,7 @@ class LogicalDeleteModel(models.Model):
 
     def active(self):
         return self.date_removed == None
+    active.short_description = _('Active')
     active.boolean = True
 
     def delete(self, using=None):
