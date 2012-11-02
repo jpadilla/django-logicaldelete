@@ -8,9 +8,9 @@ from django.utils.translation import ugettext as _
 
 class LogicalDeleteModel(models.Model):
     __metaclass__ = LogicalDeleteModelBase
-    date_removed  = models.DateTimeField(null=True, blank=True, editable=False)
+    date_removed = models.DateTimeField(null=True, blank=True, editable=False)
 
-    objects    = managers.LogicalDeletedManager()
+    objects = managers.LogicalDeletedManager()
 
     def active(self):
         return self.date_removed == None
@@ -35,17 +35,12 @@ class LogicalDeleteModel(models.Model):
 
 
 class AuditModel(models.Model):
-    date_created  = models.DateTimeField(editable=False)
-    date_modified = models.DateTimeField(editable=False)
-
-    def save(self, *args, **kwargs):
-        if not self.date_created:
-            self.date_created = datetime.now()
-        self.date_modified = datetime.now()
-        super(AuditModel, self).save(*args, **kwargs)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
+
 
 class Model(LogicalDeleteModel, AuditModel):
     """
