@@ -1,4 +1,5 @@
 from functools import update_wrapper
+
 from django.conf.urls import patterns, url
 from django.contrib import admin
 from django.contrib.admin import helpers
@@ -12,6 +13,8 @@ from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext_lazy
 from django.utils.translation import ugettext as _
 from django.contrib.admin import SimpleListFilter
+from django.template.defaultfilters import escape
+from django.http import Http404
 
 
 class ActiveListFilter(SimpleListFilter):
@@ -37,13 +40,21 @@ class ActiveListFilter(SimpleListFilter):
 
 
 class ModelAdmin(admin.ModelAdmin):
-    list_display = ('id', '__unicode__', 'active')
-    list_filter = (ActiveListFilter, )
-
     actions = ['undelete_selected']
     undelete_selected_confirmation_template = None
     undelete_confirmation_template = None
     change_form_template = 'admin/change_form_logicaldeleted.html'
+
+    def __init__(self, *args, **kwargs):
+        if self.list_display:
+            self.list_display += ('active', )
+        else:
+            self.list_display = ('id', '__unicode__', 'active')
+
+        if self.list_filter:
+            self.list_filter += (ActiveListFilter, )
+        else:
+            self.list_filter = (ActiveListFilter, )
 
     def has_undelete_permission(self, request, obj=None):
         opts = self.opts
@@ -128,14 +139,26 @@ class ModelAdmin(admin.ModelAdmin):
             raise PermissionDenied
 
         if obj is None:
-            raise Http404(_('%(name)s object with primary key %(key)r does not exist.') % {'name': force_unicode(opts.verbose_name), 'key': escape(object_id)})
+            raise Http404(
+                    _(
+                        '%(name)s object with primary key %(key)r does not exist.'
+                    ) % {
+                            'name': force_unicode(opts.verbose_name),
+                            'key': escape(object_id)
+                        }
+                )
 
-        if request.POST: # The user has already confirmed the unsdeletion.
+        if request.POST:  # The user has already confirmed the unsdeletion.
             obj_display = force_unicode(obj)
             self.log_change(request, obj, _("Undeleted %s") % obj_display)
             self.undelete_model(request, obj)
 
-            self.message_user(request, _('The %(name)s "%(obj)s" was undeleted successfully.') % {'name': force_unicode(opts.verbose_name), 'obj': force_unicode(obj_display)})
+            self.message_user(request, _(
+                'The %(name)s "%(obj)s" was undeleted successfully.') % {
+                    'name': force_unicode(opts.verbose_name),
+                    'obj': force_unicode(obj_display)
+                }
+            )
 
             if not self.has_change_permission(request, None):
                 return HttpResponseRedirect(reverse('admin:index',
