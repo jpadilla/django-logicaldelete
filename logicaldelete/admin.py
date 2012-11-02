@@ -46,6 +46,7 @@ class ModelAdmin(admin.ModelAdmin):
     change_form_template = 'admin/change_form_logicaldeleted.html'
 
     def __init__(self, *args, **kwargs):
+        super(ModelAdmin, self).__init__(*args, **kwargs)
         if self.list_display:
             self.list_display += ('active', )
         else:
