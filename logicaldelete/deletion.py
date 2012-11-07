@@ -1,8 +1,10 @@
 # -*- coding: utf-8; -*-
-from datetime import datetime
 from operator import attrgetter
+
+from django.utils.timezone import now
 from django.db.models.deletion import Collector, force_managed, sql, signals
 from django.db.models.deletion import ProtectedError
+
 from base import LogicalDeleteOptions
 
 
@@ -102,7 +104,7 @@ class LogicalDeleteCollector(Collector):
                         pk_list.append(obj.pk)
                 query.delete_batch(pk_list, self.using, field)
 
-        date_removed = datetime.now()
+        date_removed = now()
         # delete instances, mark as deleted for logicaldelete
         for model, instances in self.data.iteritems():
             query_logical = sql.UpdateQuery(model)
