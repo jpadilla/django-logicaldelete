@@ -1,9 +1,10 @@
-from datetime import datetime
 from django.db import models, router
+from django.utils.translation import ugettext as _
+from django.utils.timezone import now
+
 from deletion import LogicalDeleteCollector
 from base import LogicalDeleteModelBase
 from logicaldelete import managers
-from django.utils.translation import ugettext as _
 
 
 class LogicalDeleteModel(models.Model):
@@ -13,7 +14,7 @@ class LogicalDeleteModel(models.Model):
     objects = managers.LogicalDeletedManager()
 
     def active(self):
-        return self.date_removed == None
+        return self.date_removed is None
     active.short_description = _('Active')
     active.boolean = True
 
@@ -35,11 +36,17 @@ class LogicalDeleteModel(models.Model):
 
 
 class AuditModel(models.Model):
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_modified = models.DateTimeField(auto_now=True)
+    date_created = models.DateTimeField()
+    date_modified = models.DateTimeField()
 
     class Meta:
         abstract = True
+
+    def save(self, *args, **kwargs):
+        if not self.date_created:
+            self.date_created = now()
+        self.date_modified = now()
+        super(AuditModel, self).save(*args, **kwargs)
 
 
 class Model(LogicalDeleteModel, AuditModel):
