@@ -36,8 +36,8 @@ class LogicalDeleteModel(models.Model):
 
 
 class AuditModel(models.Model):
-    date_created = models.DateTimeField()
-    date_modified = models.DateTimeField()
+    date_created = models.DateTimeField(null=True, blank=True, editable=False)
+    date_modified = models.DateTimeField(null=True, blank=True, editable=False)
 
     class Meta:
         abstract = True
